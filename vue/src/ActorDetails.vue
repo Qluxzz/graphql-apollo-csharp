@@ -3,6 +3,7 @@ import { useQuery } from '@vue/apollo-composable'
 import { graphql } from './gql'
 import { useRoute, useRouter } from 'vue-router'
 import slugify from './slugify'
+import { computed } from 'vue'
 
 const router = useRouter()
 const route = useRoute()
@@ -29,16 +30,18 @@ const id =
       })()
 
 const { loading, error, result } = useQuery(ACTOR, { actorId: id })
+
+const actor = computed(() => result.value?.actor)
 </script>
 
 <template>
   <p v-if="loading">Loading...</p>
   <p v-else-if="error">{{ error }}</p>
-  <div v-else>
-    <button v-on:click="router.push('..')">go back</button>
-    <h1>{{ result?.actor?.firstName }} {{ result?.actor?.lastName }}</h1>
+  <div v-else-if="actor">
+    <button v-on:click="router.push('/')">go back</button>
+    <h1>{{ actor.firstName }} {{ actor.lastName }}</h1>
     <ul>
-      <template v-for="movie in result?.actor?.movies" :key="movie.id">
+      <template v-for="movie in actor.movies" :key="movie.id">
         <RouterLink :to="`/movie/${movie.id}/${slugify(movie.name)}`">
           <li>{{ movie.name }}</li>
         </RouterLink>
