@@ -1,13 +1,16 @@
-import { ApolloClient, ApolloProvider, InMemoryCache } from "@apollo/client"
+import { ApolloClient, HttpLink, InMemoryCache } from "@apollo/client"
+import { ApolloProvider } from "@apollo/client/react"
 import { BrowserRouter, Route, Routes } from "react-router-dom"
 import ActorDetails from "./ActorDetails"
 import MovieDetails from "./MovieDetails"
 import Movies from "./Movies"
 
 const client = new ApolloClient({
-  uri: "http://localhost:5034/graphql",
+  link: new HttpLink({ uri: "http://localhost:5034/graphql" }),
   cache: new InMemoryCache(),
-  connectToDevTools: true,
+  devtools: {
+    enabled: true,
+  },
 })
 
 function App() {

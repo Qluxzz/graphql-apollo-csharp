@@ -2,16 +2,16 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddPooledDbContextFactory<GraphQL.DemoContext>(
-    options => options.UseInMemoryDatabase("test")
+builder.Services.AddPooledDbContextFactory<GraphQL.DemoContext>(options =>
+    options.UseInMemoryDatabase("test")
 );
-builder.Services
-    .AddGraphQLServer()
+builder
+    .Services.AddGraphQLServer()
     .AddQueryType<Test.Query>()
     .AddFiltering()
     .AddProjections()
     .AddSorting()
-    .RegisterDbContext<GraphQL.DemoContext>(DbContextKind.Pooled)
+    .RegisterDbContextFactory<GraphQL.DemoContext>()
     .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = builder.Environment.IsDevelopment());
 
 builder.Services.AddCors();
@@ -26,29 +26,31 @@ if (!app.Environment.IsDevelopment())
 else
 {
     app.UseDeveloperExceptionPage();
-    app.UseCors(options =>
-        options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin()
-    );
+    app.UseCors(options => options.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin());
 }
 
 app.UseStaticFiles();
 app.UseRouting();
 app.MapGraphQL();
 
-using (var context = app.Services.GetRequiredService<IDbContextFactory<GraphQL.DemoContext>>().CreateDbContext())
+using (
+    var context = app
+        .Services.GetRequiredService<IDbContextFactory<GraphQL.DemoContext>>()
+        .CreateDbContext()
+)
 {
     var leonardoDiCaprio = new GraphQL.Person()
     {
         Id = 1,
         FirstName = "Leonardo",
-        LastName = "DiCaprio"
+        LastName = "DiCaprio",
     };
 
     var tomHardy = new GraphQL.Person()
     {
         Id = 2,
         FirstName = "Tom",
-        LastName = "Hardy"
+        LastName = "Hardy",
     };
 
     context.Movies.AddRange(
@@ -59,9 +61,7 @@ using (var context = app.Services.GetRequiredService<IDbContextFactory<GraphQL.D
             Genre = GraphQL.Genre.Action,
             Rating = 9.5,
             Released = DateOnly.Parse("2006-10-06"),
-            Actors = new List<GraphQL.Person>() {
-                leonardoDiCaprio
-            }
+            Actors = new List<GraphQL.Person>() { leonardoDiCaprio },
         },
         new GraphQL.Movie()
         {
@@ -70,10 +70,7 @@ using (var context = app.Services.GetRequiredService<IDbContextFactory<GraphQL.D
             Genre = GraphQL.Genre.Action,
             Rating = 10,
             Released = DateOnly.Parse("2010-07-16"),
-            Actors = new List<GraphQL.Person>() {
-                leonardoDiCaprio,
-                tomHardy
-            }
+            Actors = new List<GraphQL.Person>() { leonardoDiCaprio, tomHardy },
         },
         new GraphQL.Movie()
         {
@@ -82,9 +79,7 @@ using (var context = app.Services.GetRequiredService<IDbContextFactory<GraphQL.D
             Genre = GraphQL.Genre.Drama,
             Rating = 9.7,
             Released = DateOnly.Parse("2017-07-21"),
-            Actors = new List<GraphQL.Person>() {
-                tomHardy
-            }
+            Actors = new List<GraphQL.Person>() { tomHardy },
         }
     );
     context.SaveChanges();

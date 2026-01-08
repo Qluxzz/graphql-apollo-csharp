@@ -1,4 +1,4 @@
-import { useQuery } from "@apollo/client"
+import { useQuery } from "@apollo/client/react"
 import { Link } from "react-router-dom"
 import slugify from "slugify"
 import { graphql } from "./gql"
